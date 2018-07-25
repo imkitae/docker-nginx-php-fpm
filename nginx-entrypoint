@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Configure PHP date.timezone
+echo "date.timezone = ${PHP_TIMEZONE}" > /etc/php7/conf.d/timezone.ini
+
+# Configure Document Root
+mkdir -p ${NGINX_SERVER_ROOT}
+chown www-data:www-data ${NGINX_SERVER_ROOT}
+
+cp /etc/nginx/conf.d/default.conf.tmpl /etc/nginx/conf.d/default.conf
+sed -i "s|\$NGINX_SERVER_ROOT|${NGINX_SERVER_ROOT}|g" /etc/nginx/conf.d/default.conf
+sed -i "s|\$NGINX_SERVER_NAME|${NGINX_SERVER_NAME}|g" /etc/nginx/conf.d/default.conf
+
+PHP_INI_PATH=/etc/php7/conf.d
+XDEBUG_INI_DISABLED=$PHP_INI_PATH/xdebug.ini.disabled
+XDEBUG_INI_ENABLED=$PHP_INI_PATH/xdebug.ini
+XDEBUG_INI_REMOTE_HOST=$PHP_INI_PATH/xdebug_remote_host.ini
+
+# Enable XDebug if needed
+if [ "${XDEBUG_ENABLE}" = "1" ]; then
+    echo "nginx-entrypoint: Enable XDebug.."
+    if [ -f "${XDEBUG_INI_DISABLED}" ]; then
+        mv ${XDEBUG_INI_DISABLED} ${XDEBUG_INI_ENABLED}
+    fi;
+    # Configure XDebug remote host
+    if [ -z "${XDEBUG_HOST}" ]; then
+        # Allows to set XDEBUG_HOST by env variable because could be different from the one which come from ip route command
+        XDEBUG_HOST=$(/sbin/ip route|awk '/default/ { print $3 }')
+    fi;
+    echo "nginx-entrypoint: Set XDebug remote host \"${XDEBUG_HOST}\""
+    echo "xdebug.remote_host=${XDEBUG_HOST}" > ${XDEBUG_INI_REMOTE_HOST}
+else
+    if [ -f "${XDEBUG_INI_ENABLED}" ]; then
+        mv ${XDEBUG_INI_ENABLED} ${XDEBUG_INI_DISABLED}
+    fi;
+    if [ -f "${XDEBUG_INI_REMOTE_HOST}" ]; then
+      rm ${XDEBUG_INI_REMOTE_HOST}
+    fi;
+fi;
+
+echo "nginx-entrypoint: Run php-fpm with /etc/php7/php-fpm.conf"
+php-fpm7 -D --fpm-config /etc/php7/php-fpm.conf
+
+echo "nginx-entrypoint: Run command \"$@\""
+exec "$@"

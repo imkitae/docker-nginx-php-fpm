@@ -1,0 +1,17 @@
+sudo: required
+
+language: generic
+
+branches:
+  only:
+  - master
+
+services:
+  - docker
+
+env:
+  - IMAGE_REPO=ktkang/nginx-php-fpm DOCKER_TAG=${TRAVIS_TAG}
+
+script:
+  - bin/build.sh
+  - bin/push.sh
