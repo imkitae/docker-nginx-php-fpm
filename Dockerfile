@@ -42,4 +42,4 @@ COPY nginx-entrypoint /usr/local/bin/
 ENTRYPOINT ["nginx-entrypoint"]
 CMD ["nginx", "-g", "daemon off;"]
 
-WORKDIR "/var/www/html"
+WORKDIR /var/www/html

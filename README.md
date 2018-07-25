@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.com/imkitae/docker-nginx-php-fpm.svg?branch=master)](https://travis-ci.com/imkitae/docker-nginx-php-fpm)
 [![](https://images.microbadger.com/badges/version/ktkang/nginx-php-fpm.svg)](http://microbadger.com/images/ktkang/nginx-php-fpm)
 [![](https://images.microbadger.com/badges/image/ktkang/nginx-php-fpm.svg)](http://microbadger.com/images/ktkang/nginx-php-fpm)
----
+
 Docker image for PHP web service using nginx + php-fpm
 
 

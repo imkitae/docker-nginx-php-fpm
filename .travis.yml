@@ -1,10 +1,5 @@
 sudo: required
-
 language: generic
-
-branches:
-  only:
-  - master
 
 services:
   - docker
@@ -14,4 +9,11 @@ env:
 
 script:
   - bin/build.sh
-  - bin/push.sh
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: bin/push.sh
+    on:
+      branch: master
+      tags: true
