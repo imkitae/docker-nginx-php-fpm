@@ -6,8 +6,8 @@ ENV NGINX_SERVER_ROOT /var/www/html
 ENV NGINX_SERVER_NAME localhost
 
 RUN addgroup -S www-data \
-&& adduser -D -H -s /sbin/nologin -G www-data www-data \
-&& adduser -D -H -s /sbin/nologin -G www-data nginx
+&& adduser -D -h /var/www -H -s /sbin/nologin -G www-data www-data \
+&& adduser -D -h /etc/nginx -H -s /sbin/nologin -G www-data nginx
 
 RUN apk --no-cache add \
     bash \
