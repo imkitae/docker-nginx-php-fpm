@@ -3,7 +3,7 @@
 [![](https://images.microbadger.com/badges/version/ktkang/nginx-php-fpm.svg)](http://microbadger.com/images/ktkang/nginx-php-fpm)
 [![](https://images.microbadger.com/badges/image/ktkang/nginx-php-fpm.svg)](http://microbadger.com/images/ktkang/nginx-php-fpm)
 
-Docker image for PHP web service using nginx + php-fpm
+Docker image for PHP web service using Nginx + PHP-FPM
 
 
 # Usage
@@ -18,7 +18,19 @@ open http://localhost:8000
 ```
 
 # Environment variables
+
+### PHP
 - XDEBUG_ENABLE (default = 0)
 - PHP_TIMEZONE (default = Asia/Seoul)
+
+### Nginx
 - NGINX_SERVER_ROOT (default = /var/www/html)
 - NGINX_HEALTH_CHECK_PATH (default = /health)
+
+
+### PHP-FPM
+- PHPFPM_PM_MAX_CHILDREN (default = 50)
+- PHPFPM_PM_START_SERVERS (default = 20)
+- PHPFPM_PM_MIN_SPARE_SERVERS (default = 15)
+- PHPFPM_PM_MAX_SPARE_SERVERS (default = 35)
+- PHPFPM_PM_MAX_REQUESTS (default = 512)

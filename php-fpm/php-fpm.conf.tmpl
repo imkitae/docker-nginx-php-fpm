@@ -2,17 +2,23 @@
 
 user = www-data
 group = www-data
+
 listen = /var/run/php-fpm.sock
 listen.owner = www-data
 listen.group = www-data
 listen.mode = 0660
 
 pm = dynamic
+
 ; pm.max_children = (total RAM - RAM used by other process) / (average amount of RAM used by a PHP process)
-pm.max_children = 15
+pm.max_children = $PHPFPM_PM_MAX_CHILDREN
+
 ; pm.start_servers = min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-pm.start_servers = 5
-pm.min_spare_servers = 5
-pm.max_spare_servers = 10
+pm.start_servers = $PHPFPM_PM_START_SERVERS
+
+pm.min_spare_servers = $PHPFPM_PM_MIN_SPARE_SERVERS
+pm.max_spare_servers = $PHPFPM_PM_MAX_SPARE_SERVERS
+
+pm.max_requests = $PHPFPM_PM_MAX_REQUESTS
 
 chdir = /var/www/html

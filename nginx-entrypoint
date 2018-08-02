@@ -2,21 +2,31 @@
 
 set -e
 
-# Configure PHP date.timezone
-echo "date.timezone = ${PHP_TIMEZONE}" > /etc/php7/conf.d/timezone.ini
-
 # Configure Document Root
 mkdir -p ${NGINX_SERVER_ROOT}
 chown www-data:www-data ${NGINX_SERVER_ROOT}
 
-cp /etc/nginx/conf.d/default.conf.tmpl /etc/nginx/conf.d/default.conf
-sed -i "s|\$NGINX_SERVER_ROOT|${NGINX_SERVER_ROOT}|g" /etc/nginx/conf.d/default.conf
-sed -i "s|\$NGINX_HEALTH_CHECK_PATH|${NGINX_HEALTH_CHECK_PATH}|g" /etc/nginx/conf.d/default.conf
-
+# Configure PHP
 PHP_INI_PATH=/etc/php7/conf.d
-XDEBUG_INI_DISABLED=$PHP_INI_PATH/xdebug.ini.disabled
-XDEBUG_INI_ENABLED=$PHP_INI_PATH/xdebug.ini
-XDEBUG_INI_REMOTE_HOST=$PHP_INI_PATH/xdebug_remote_host.ini
+echo "date.timezone = ${PHP_TIMEZONE}" > ${PHP_INI_PATH}/timezone.ini
+XDEBUG_INI_DISABLED=${PHP_INI_PATH}/xdebug.ini.disabled
+XDEBUG_INI_ENABLED=${PHP_INI_PATH}/xdebug.ini
+XDEBUG_INI_REMOTE_HOST=${PHP_INI_PATH}/xdebug_remote_host.ini
+
+# Configure Nginx
+NGINX_CONFIG=/etc/nginx/conf.d/default.conf
+cp ${NGINX_CONFIG}.tmpl ${NGINX_CONFIG}
+sed -i "s|\$NGINX_SERVER_ROOT|${NGINX_SERVER_ROOT}|g" ${NGINX_CONFIG}
+sed -i "s|\$NGINX_HEALTH_CHECK_PATH|${NGINX_HEALTH_CHECK_PATH}|g" ${NGINX_CONFIG}
+
+# Configure PHP-FPM
+PHPFPM_CONFIG=/etc/php7/php-fpm.conf
+cp ${PHPFPM_CONFIG}.tmpl ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MAX_CHILDREN|${PHPFPM_PM_MAX_CHILDREN}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_START_SERVERS|${PHPFPM_PM_START_SERVERS}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MIN_SPARE_SERVERS|${PHPFPM_PM_MIN_SPARE_SERVERS}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MAX_SPARE_SERVERS|${PHPFPM_PM_MAX_SPARE_SERVERS}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MAX_REQUESTS|${PHPFPM_PM_MAX_REQUESTS}|g" ${PHPFPM_CONFIG}
 
 # Enable XDebug if needed
 if [ "${XDEBUG_ENABLE}" = "1" ]; then
@@ -40,8 +50,10 @@ else
     fi;
 fi;
 
+# Run PHP-FPM
 echo "nginx-entrypoint: Run php-fpm with /etc/php7/php-fpm.conf"
 php-fpm7 -D --fpm-config /etc/php7/php-fpm.conf
 
+# Run Nginx
 echo "nginx-entrypoint: Run command \"$@\""
 exec "$@"
