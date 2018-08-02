@@ -3,7 +3,7 @@ FROM alpine:3.7
 ENV XDEBUG_ENABLE 0
 ENV PHP_TIMEZONE Asia/Seoul
 ENV NGINX_SERVER_ROOT /var/www/html
-ENV NGINX_SERVER_NAME localhost
+ENV NGINX_HEALTH_CHECK_PATH /health
 
 RUN addgroup -S www-data \
 && adduser -D -h /var/www -H -s /sbin/nologin -G www-data www-data \

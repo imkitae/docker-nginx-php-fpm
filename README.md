@@ -10,7 +10,7 @@ Docker image for PHP web service using nginx + php-fpm
 ```bash
 docker run -it --rm \
     -p 8000:80 \
-    -v $(pwd):/var/www/html \
+    -v $(pwd)/web:/var/www/html \
     ktkang/nginx-php-fpm:latest
 
 // You can see php info page.
@@ -21,4 +21,4 @@ open http://localhost:8000
 - XDEBUG_ENABLE (default = 0)
 - PHP_TIMEZONE (default = Asia/Seoul)
 - NGINX_SERVER_ROOT (default = /var/www/html)
-- NGINX_SERVER_NAME (default = localhost)
+- NGINX_HEALTH_CHECK_PATH (default = /health)
