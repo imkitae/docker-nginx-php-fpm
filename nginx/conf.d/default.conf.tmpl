@@ -7,7 +7,7 @@ server {
     server_name _;
 
     location / {
-        try_files $uri $uri/ /index.php;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     # Deny all attempts to access hidden files
@@ -31,7 +31,7 @@ server {
 
     # Pass the PHP scripts to FastCGI server listening on socket
     location ~ [^/]\.php(/|$) {
-        try_files $uri $uri/ /index.php;
+        try_files $uri $uri/ /index.php?$query_string;
 
         fastcgi_pass unix:/var/run/php-fpm.sock;
 
