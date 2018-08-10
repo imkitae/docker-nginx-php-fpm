@@ -23,7 +23,7 @@ server {
     }
 
     # Health check
-    location $NGINX_HEALTH_CHECK_PATH {
+    location = $NGINX_HEALTH_CHECK_PATH {
         access_log off;
         add_header Content-Type text/plain;
         return 200 "OK\n";
