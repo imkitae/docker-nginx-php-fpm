@@ -1,17 +1,5 @@
 FROM alpine:3.7
 
-ENV XDEBUG_ENABLE 0
-ENV PHP_TIMEZONE Asia/Seoul
-
-ENV NGINX_SERVER_ROOT /var/www/html
-ENV NGINX_HEALTH_CHECK_PATH /health
-
-ENV PHPFPM_PM_MAX_CHILDREN 50
-ENV PHPFPM_PM_START_SERVERS 20
-ENV PHPFPM_PM_MIN_SPARE_SERVERS 15
-ENV PHPFPM_PM_MAX_SPARE_SERVERS 35
-ENV PHPFPM_PM_MAX_REQUESTS 512
-
 RUN addgroup -S www-data \
 && adduser -D -h /var/www -H -s /sbin/nologin -G www-data www-data \
 && adduser -D -h /etc/nginx -H -s /sbin/nologin -G www-data nginx
@@ -33,21 +21,25 @@ RUN apk --no-cache add \
     nginx \
 && rm -rf /var/cache/apk/* \
 && rm -rf /var/www/* \
-&& mkdir -p /var/www/html \
-&& chown www-data:www-data /var/www/html
+&& rm -rf /etc/php7/php-fpm.d \
+&& mkdir -p /var/www/html /var/log/nginx /var/log/php7 \
+&& chown www-data:www-data /var/www/html \
+&& chmod -R 766 /var/log/nginx /var/log/php7
 
 COPY php/* /etc/php7/conf.d/
-COPY php-fpm/* /etc/php7/
+COPY php-fpm/ /etc/php7/
 COPY nginx /etc/nginx
 
-# Forward request and error logs to docker log collector
+# Forward logs to docker log collector
 RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-&& ln -sf /dev/stderr /var/log/nginx/error.log
+&& ln -sf /dev/stderr /var/log/nginx/error.log \
+&& ln -sf /dev/stdout /var/log/php7/access.log \
+&& ln -sf /dev/stderr /var/log/php7/error.log
 
 EXPOSE 80 443
 
-COPY nginx-entrypoint /usr/local/bin/
-ENTRYPOINT ["nginx-entrypoint"]
-CMD ["nginx", "-g", "daemon off;"]
+COPY nginx-php-fpm-entrypoint /usr/local/bin/
+ENTRYPOINT ["nginx-php-fpm-entrypoint"]
+CMD ["bash", "-c", "php-fpm7 && nginx"]
 
 WORKDIR /var/www/html

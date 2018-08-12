@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -e
+
+# Set the domain of Docker host 'host.docker.internal'
+HOST_DOMAIN="host.docker.internal"
+HOST_IP=$(ip route | awk 'NR==1 {print $3}')
+ping -q -c1 $HOST_DOMAIN > /dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo -e "$HOST_IP\t$HOST_DOMAIN" >> /etc/hosts
+fi
+
+# Variables
+PHP_TIMEZONE=${PHP_TIMEZONE:-Asia/Seoul}
+PHP_XDEBUG_ENABLE=${PHP_XDEBUG_ENABLE:-0}
+PHP_XDEBUG_REMOTE_HOST=${PHP_XDEBUG_REMOTE_HOST:-$HOST_DOMAIN}
+
+NGINX_DEBUG_LEVEL=${NGINX_DEBUG_LEVEL:-info}
+NGINX_SERVER_ROOT=${NGINX_SERVER_ROOT:-/var/www/html}
+NGINX_HEALTH_CHECK_PATH=${NGINX_HEALTH_CHECK_PATH:-/health}
+
+PHPFPM_LOG_LEVEL=${PHPFPM_LOG_LEVEL:-notice}
+PHPFPM_PM_MAX_CHILDREN=${PHPFPM_PM_MAX_CHILDREN:-50}
+PHPFPM_PM_START_SERVERS=${PHPFPM_PM_START_SERVERS:-20}
+PHPFPM_PM_MIN_SPARE_SERVERS=${PHPFPM_PM_MIN_SPARE_SERVERS:-15}
+PHPFPM_PM_MAX_SPARE_SERVERS=${PHPFPM_PM_MAX_SPARE_SERVERS:-35}
+PHPFPM_PM_MAX_REQUESTS=${PHPFPM_PM_MAX_REQUESTS:-512}
+PHPFPM_MONITOR_ENABLE=${PHPFPM_MONITOR_ENABLE:-0}
+
+
+# Configure PHP
+PHP_INI_DIR=/etc/php7/conf.d
+echo "date.timezone = ${PHP_TIMEZONE}" > ${PHP_INI_DIR}/99_timezone.ini
+
+PHP_XDEBUG_INI=${PHP_INI_DIR}/99_xdebug.ini
+if [ "${PHP_XDEBUG_ENABLE}" == "1" ]
+then
+    cp ${PHP_XDEBUG_INI}.tmpl ${PHP_XDEBUG_INI}
+    echo "Set XDebug remote host \"${PHP_XDEBUG_REMOTE_HOST}\""
+    echo "xdebug.remote_host=${PHP_XDEBUG_REMOTE_HOST}" >> ${PHP_XDEBUG_INI}
+elif [ -f "${PHP_XDEBUG_INI}" ]
+then
+    rm ${PHP_XDEBUG_INI}
+fi
+
+
+# Configure Nginx
+mkdir -p ${NGINX_SERVER_ROOT}
+chown www-data:www-data ${NGINX_SERVER_ROOT}
+
+NGINX_CONFIG=/etc/nginx/nginx.conf
+cp ${NGINX_CONFIG}.tmpl ${NGINX_CONFIG}
+sed -i "s|\$NGINX_DEBUG_LEVEL|${NGINX_DEBUG_LEVEL}|g" ${NGINX_CONFIG}
+
+NGINX_SERVER_CONFIG=/etc/nginx/conf.d/default.conf
+cp ${NGINX_SERVER_CONFIG}.tmpl ${NGINX_SERVER_CONFIG}
+sed -i "s|\$NGINX_SERVER_ROOT|${NGINX_SERVER_ROOT}|g" ${NGINX_SERVER_CONFIG}
+sed -i "s|\$NGINX_HEALTH_CHECK_PATH|${NGINX_HEALTH_CHECK_PATH}|g" ${NGINX_SERVER_CONFIG}
+
+if [ "${PHPFPM_MONITOR_ENABLE}" == "1" ]
+then
+    sed -i "s|# PHP_FPM_MONITOR_PLACEHOLDER|location ~ ^/fpm-(status\|ping)$ {\n\
+        access_log off;\n\
+        allow 127.0.0.1;\n\
+        allow ${HOST_IP};\n\
+        deny all;\n\n\
+        fastcgi_pass unix:/var/run/php-fpm.sock;\n\
+        include /etc/nginx/fastcgi_params;\n\
+    }|g" ${NGINX_SERVER_CONFIG}
+fi
+
+
+# Configure PHP-FPM
+PHPFPM_CONFIG=/etc/php7/php-fpm.conf
+cp ${PHPFPM_CONFIG}.tmpl ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_LOG_LEVEL|${PHPFPM_LOG_LEVEL}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MAX_CHILDREN|${PHPFPM_PM_MAX_CHILDREN}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_START_SERVERS|${PHPFPM_PM_START_SERVERS}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MIN_SPARE_SERVERS|${PHPFPM_PM_MIN_SPARE_SERVERS}|g" ${PHPFPM_CONFIG}
+sed -i "s|\$PHPFPM_PM_MAX_SPARE_SERVERS|${PHPFPM_PM_MAX_SPARE_SERVERS}|g" ${PHPFPM_CONFIG}
+
+if [ "${PHPFPM_MONITOR_ENABLE}" == "1" ]
+then
+    sed -i "s|\$PHPFPM_PM_MAX_REQUESTS|${PHPFPM_PM_MAX_REQUESTS}\n\
+pm.status_path = /fpm-status\n\
+ping.path = /fpm-ping\n\
+    |g" ${PHPFPM_CONFIG}
+else
+    sed -i "s|\$PHPFPM_PM_MAX_REQUESTS|${PHPFPM_PM_MAX_REQUESTS}|g" ${PHPFPM_CONFIG}
+fi
+
+echo "Run command \"$@\""
+exec "$@"

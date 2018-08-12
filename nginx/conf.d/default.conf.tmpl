@@ -2,6 +2,8 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server ipv6only=on;
 
+    access_log /var/log/nginx/access.log custom;
+
     root $NGINX_SERVER_ROOT;
     index index.php index.html index.htm;
     server_name _;
@@ -42,4 +44,6 @@ server {
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         fastcgi_param HTTP_PROXY ""; # Mitigate https://httpoxy.org/ vulnerabilities
     }
+
+    # PHP_FPM_MONITOR_PLACEHOLDER
 }
