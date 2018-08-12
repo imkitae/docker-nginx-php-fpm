@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.0.2] - 2018-08-12
+### Changed
+- Rename entrypoint, and some envs | a0ca353c
+
+### Fixed
+- Fix PHP configuration to set $_ENV | 76fdf12f
+
+
 ## [1.0.1] - 2018-08-10
 ### Fixed
 - Add missing $query_string to index.php | 1e5849c5
