@@ -6,13 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [1.1.0] - 2018-08-16
+### Added
+- Add configuration refer to trusted proxies of CloudFlare | 505495b0
+### Changed
+- Set keepalive off on health check path | 0a49ba59
+
 ## [1.0.2] - 2018-08-12
 ### Changed
 - Rename entrypoint, and some envs | a0ca353c
-
 ### Fixed
 - Fix PHP configuration to set $_ENV | 76fdf12f
-
 
 ## [1.0.1] - 2018-08-10
 ### Fixed
