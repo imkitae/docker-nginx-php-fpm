@@ -38,6 +38,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log \
 
 EXPOSE 80 443
 
+COPY nginx-update-proxies /usr/local/bin/
 COPY nginx-php-fpm-entrypoint /usr/local/bin/
 ENTRYPOINT ["nginx-php-fpm-entrypoint"]
 CMD ["bash", "-c", "php-fpm7 && nginx"]

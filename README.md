@@ -28,6 +28,7 @@ open http://localhost:8000
 - NGINX_DEBUG_LEVEL (default = info)
 - NGINX_SERVER_ROOT (default = /var/www/html)
 - NGINX_HEALTH_CHECK_PATH (default = /health)
+- NGINX_TRUSTED_CLOUDFLARE_PROXIES (default = 0)
 
 ### PHP-FPM
 - PHPFPM_LOG_LEVEL (default = notice)
