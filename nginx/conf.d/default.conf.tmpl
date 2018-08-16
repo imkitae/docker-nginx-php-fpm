@@ -26,6 +26,7 @@ server {
 
     # Health check
     location = $NGINX_HEALTH_CHECK_PATH {
+        keepalive_timeout 0;
         access_log off;
         add_header Content-Type text/plain;
         return 200 "OK\n";
