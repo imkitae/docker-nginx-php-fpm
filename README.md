@@ -23,6 +23,7 @@ open http://localhost:8000
 - PHP_TIMEZONE (default = Asia/Seoul)
 - PHP_XDEBUG_ENABLE (default = 0)
 - PHP_XDEBUG_REMOTE_HOST (default = `/sbin/ip route|awk '/default/ { print $3 }'`)
+- PHP_XDEUBG_REMOTE_AUTOSTART (default = off)
 
 ### Nginx
 - NGINX_DEBUG_LEVEL (default = info)
