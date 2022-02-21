@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.9
 
 RUN addgroup -S www-data \
 && adduser -D -h /var/www -H -s /sbin/nologin -G www-data www-data \
